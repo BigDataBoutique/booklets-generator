@@ -29,13 +29,18 @@ def findInDict(needle, haystack):
 
 
 def add_pdf(full_path, output):
+    pages_added = 0
     pdf = PdfFileReader(open(full_path, "rb"))
     for page_num in xrange(pdf.numPages):
         output.addPage(pdf.getPage(page_num))
+        pages_added += 1
+    return pages_added
 
 
 def generate(job_name, additional_dirs=None):
     print('Generating ' + job_name)
+
+    total_pages = 0
 
     if additional_dirs is None:
         additional_dirs = []
@@ -45,9 +50,10 @@ def generate(job_name, additional_dirs=None):
 
     cover = PdfFileReader(open(dir_path + "/essentials/%s.pdf" % job_name, 'rb'))
     output.addPage(cover.getPage(0))
+    total_pages += 1
 
-    add_pdf(dir_path + "/essentials/cover-white-back.pdf", output)
-    add_pdf(dir_path + "/essentials/cover_page.pdf", output)
+    total_pages += add_pdf(dir_path + "/essentials/cover-white-back.pdf", output)
+    total_pages += add_pdf(dir_path + "/essentials/cover_page.pdf", output)
 
     for dir in [dir_path + "/slides-" + job_name] + additional_dirs:
         for filename in os.listdir(dir):
@@ -65,13 +71,20 @@ def generate(job_name, additional_dirs=None):
                     p.cropBox = p.mediaBox = p.artBox = p.trimBox = RectangleObject([30, 30, 450, 625])
                     output.addPage(p)
                     output.addPage(page_of_lines)
+                    total_pages += 2
             elif filename.endswith(".pdf"):
-                add_pdf(open(os.path.join(dir, filename)), output)
+                output.addPage(page_of_lines)  # even out number of pages
+                total_pages += add_pdf(os.path.join(dir, filename), output) + 1
+                if total_pages % 2 != 0:
+                    output.addPage(page_of_lines)  # even out number of pages
+                    total_pages += 1
 
-    output.addPage(page_of_lines)  # even out number of pages
+    if total_pages % 2 != 0:
+        output.addPage(page_of_lines)  # even out number of pages
+        total_pages += 1
 
-    add_pdf(dir_path + "/essentials/survey.pdf", output)
-    add_pdf(dir_path + "/essentials/back-cover.pdf", output)
+    total_pages += add_pdf(dir_path + "/essentials/survey.pdf", output)
+    total_pages += add_pdf(dir_path + "/essentials/back-cover.pdf", output)
 
     # Writing all the collected pages to a file
     with open(dir_path + "/final/%s.pdf" % job_name, "wb") as f:
