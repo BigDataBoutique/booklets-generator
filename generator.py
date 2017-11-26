@@ -56,7 +56,7 @@ def generate(job_name, additional_dirs=None):
     total_pages += add_pdf(dir_path + "/essentials/cover_page.pdf", output)
 
     for dir in [dir_path + "/slides-" + job_name] + additional_dirs:
-        for filename in os.listdir(dir):
+        for filename in sorted(list(os.listdir(dir))):
             if os.path.isdir(filename) or not filename.endswith(".pdf"):
                 continue
 
@@ -64,6 +64,7 @@ def generate(job_name, additional_dirs=None):
                 continue
 
             if filename.endswith(".slides.pdf"):
+                print(filename)
                 pdf = PdfFileReader(open(os.path.join(dir, filename), "rb"))
                 for page_num in xrange(pdf.numPages):
                     p = pdf.getPage(page_num)
