@@ -68,7 +68,7 @@ def generate(job_name, additional_dirs=None):
                 for page_num in xrange(pdf.numPages):
                     p = pdf.getPage(page_num)
                     p.scaleBy(0.8)
-                    p.cropBox = p.mediaBox = p.artBox = p.trimBox = RectangleObject([30, 30, 450, 625])
+                    p.cropBox = p.mediaBox = p.artBox = p.trimBox = RectangleObject([35, 0, 455, 595])
                     output.addPage(p)
                     output.addPage(page_of_lines)
                     total_pages += 2
